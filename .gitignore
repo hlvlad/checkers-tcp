@@ -1,2 +1,6 @@
-/cmake-build-debug/
-.idea
+/checkers-tcp-server/misc.h
+/checkers-tcp-server/engine.h
+/checkers-tcp-server/engine.cpp
+/checkers-tcp-server/.idea/
+/checkers-tcp-client/.idea/
+/checkers-tcp-server/cmake-build-debug/
