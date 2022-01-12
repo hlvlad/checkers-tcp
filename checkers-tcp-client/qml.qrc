@@ -14,7 +14,5 @@
         <file>images/kingb.png</file>
         <file>images/manw.png</file>
         <file>images/manb.png</file>
-        <file>qml/TestCheckersBoard.qml</file>
-        <file>qml/CheckerBoard_old.qml</file>
     </qresource>
 </RCC>

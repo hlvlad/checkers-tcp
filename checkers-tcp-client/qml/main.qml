@@ -69,11 +69,6 @@ Window {
         GamePane { }
     }
 
-    Component {
-        id: test_game_view
-        TestCheckersBoard { }
-    }
-
     function showError(error_message) {
         message_dialog.type = "error"
         message_dialog.text = error_message
