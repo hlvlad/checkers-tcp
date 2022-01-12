@@ -5,3 +5,4 @@
 /checkers-tcp-server/.idea/
 /checkers-tcp-client/.idea/
 /checkers-tcp-server/cmake-build-debug/
+/checkers-tcp-server/build/
