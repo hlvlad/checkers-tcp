@@ -1,3 +1,4 @@
+.idea
 /checkers-tcp-server/misc.h
 /checkers-tcp-server/engine.h
 /checkers-tcp-server/engine.cpp
