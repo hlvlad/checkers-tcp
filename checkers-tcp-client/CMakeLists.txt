@@ -42,8 +42,7 @@ set(HEADERS
     )
 
 set(QML_FILES
-    qml/TestCheckersBoard.qml
-    qml/CheckerBoard.qml
+        qml/CheckerBoard.qml
     qml/ConnectingPane.qml
     qml/CreatedLobbyPane.qml
     qml/ErrorDialog.qml
