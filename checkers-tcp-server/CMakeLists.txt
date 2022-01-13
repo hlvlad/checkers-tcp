@@ -15,7 +15,7 @@ set(HEADERS
         include/socket.h
         include/message.h
         include/pack.h
-        include/new_misc.h
+        include/board.h
         include/checkers_engine.h
         )
 

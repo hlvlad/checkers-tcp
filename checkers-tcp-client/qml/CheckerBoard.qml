@@ -20,7 +20,6 @@ Rectangle {
 
     CheckersModel {
         id: checkers_model
-        onMove: NetworkSession.send_move(from, to, type)
     }
 
     Connections {
@@ -59,16 +58,18 @@ Rectangle {
                             console.log(`SELECTED TO spot: ${model.spot_number}`);
                             root.toSquareIndex = model.spot_number;
                             console.log(`MOVE_REQUEST from ${root.fromSquareIndex} to ${root.toSquareIndex}`);
-                            checkers_model.make_move(root.fromSquareIndex, root.toSquareIndex);
+                            const move_type = checkers_model.make_move(root.fromSquareIndex, root.toSquareIndex);
+                            // if move type is not INVALID
+                            if (move_type !== 4) NetworkSession.send_move(root.fromSquareIndex, root.toSquareIndex, move_type);
                             root.fromSquareIndex = -1;
                         }
                     }
                 }
-                Text {
-                    visible: model.is_spot
-                    text : visible ? model.spot_number : ""
-                    color: "red"
-                }
+//                Text {
+//                    visible: model.is_spot
+//                    text : visible ? model.spot_number : ""
+//                    color: "red"
+//                }
                 Rectangle {
                     id: square_overlay
                     anchors.fill: cell

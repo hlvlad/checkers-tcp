@@ -1,7 +1,7 @@
 #ifndef CHECKERS_ENGINE_H
 #define CHECKERS_ENGINE_H
 
-#include "new_misc.h"
+#include "board.h"
 #include <vector>
 
 using MoveList  = std::vector<Move>;

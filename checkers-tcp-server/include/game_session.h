@@ -26,7 +26,7 @@ struct SessionData {
   std::mutex session_mutex;
 
   SessionData(Socket player1_socket, Socket player2_socket);
-  void handle_message(SocketNumber socket_number, const struct MessageStorage &message);
+  void handle_message(SocketNumber socket_number, const struct MessageStorage &message, std::atomic<bool>& is_exit);
 };
 
 void game_session_routine(Socket player1_socket, Socket player2_socket, std::atomic<bool> &is_exit, uint32_t lobby_id);

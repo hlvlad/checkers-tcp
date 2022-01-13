@@ -25,7 +25,8 @@ enum ErrorType: uint8_t {
     LOBBY_NOT_EXISTS,
     OPPONENT_DISCONNECTED,
     SERVER_DISCONNECTED,
-    SERVER_ERROR
+    SERVER_ERROR,
+	INVALID_MOVE
 };
 
 enum GameFlags: uint8_t {

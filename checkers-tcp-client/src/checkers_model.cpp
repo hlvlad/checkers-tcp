@@ -1,4 +1,4 @@
-#include "checkersmodel.h"
+#include "checkers_model.h"
 
 #include <QDebug>
 
@@ -102,7 +102,7 @@ Qt::ItemFlags CheckersModel::flags(const QModelIndex &index) const {
     return Qt::ItemIsEditable | QAbstractListModel::flags(index);
 }
 
-bool CheckersModel::make_move(quint8 from, quint8 to)
+quint8 CheckersModel::make_move(quint8 from, quint8 to)
 {
 
     for (const auto& valid_move: engine.valid_moves(from)) {
@@ -128,11 +128,10 @@ bool CheckersModel::make_move(quint8 from, quint8 to)
                 spots.at(captured_index).piece_type = PieceColorType::None;
             }
             emitDataChanged(PieceTypeRole);
-            emit move(valid_move.from, valid_move.to, valid_move.type);
-            return true;
+            return valid_move.type;
         }
     }
-    return false;
+	return MoveType::INVALID;
 }
 
 quint8 CheckersModel::highlightValidMoves(SpotIndex spot_index) {

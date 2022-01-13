@@ -1,7 +1,7 @@
 #ifndef CHECKERSMODEL_H
 #define CHECKERSMODEL_H
 
-#include "checkers_engine.h"
+#include "../../checkers-tcp-server/include/checkers_engine.h"
 
 #include <QAbstractListModel>
 #include <QObject>
@@ -61,7 +61,7 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role);
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
-    Q_INVOKABLE bool make_move(quint8 from, quint8 to);
+    Q_INVOKABLE quint8 make_move(quint8 from, quint8 to);
 
 signals:
     void move(quint8 from, quint8 to, quint8 type);

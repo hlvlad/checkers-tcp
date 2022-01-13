@@ -24,7 +24,8 @@ enum MoveType : uint8_t {
     NORMAL = 0,
     CAPTURE = 1,
     PROMOTION = 2,
-    CAPTURE_PROMOTION = CAPTURE | PROMOTION
+    CAPTURE_PROMOTION = CAPTURE | PROMOTION,
+    INVALID = 4
 };
 
 struct Move {

@@ -10,11 +10,9 @@
 #include <poll.h>
 #include <spdlog/spdlog.h>
 
-#include "../include/game_session.h"
-#include "../include/message.h"
+#include "game_session.h"
 
-
-int check_error_recv(int socket_fd, size_t nbytes) {
+int check_error_recv(size_t nbytes) {
     if (nbytes <= 0) {
         if (nbytes == 0) {
             // Connection closed
@@ -32,11 +30,11 @@ int receive_message(int socket_fd, struct MessageStorage* message) {
     size_t nbytes;
     // Read message type
     nbytes = recv(socket_fd, &(message->message_type), sizeof message->message_type, 0);
-    if(check_error_recv(socket_fd, nbytes) < 0) return -1;
+    if(check_error_recv(nbytes) < 0) return -1;
 
     // Read message length
     nbytes = recv(socket_fd, &(message->len), sizeof message->len, 0);
-    if(check_error_recv(socket_fd, nbytes) < 0) return -1;
+    if(check_error_recv(nbytes) < 0) return -1;
 
     if(message->len == 0) return 0;
 
@@ -44,7 +42,7 @@ int receive_message(int socket_fd, struct MessageStorage* message) {
     size_t total = 0, bytesleft = message->len;
     while(total < message->len) {
         nbytes = recv(socket_fd, message->payload+total, bytesleft, 0);
-        if (check_error_recv(socket_fd, nbytes) < 0) return -1;
+        if (check_error_recv(nbytes) < 0) return -1;
         total += nbytes;
         bytesleft -= nbytes;
     }
@@ -68,7 +66,6 @@ void game_session_routine(Socket player1_socket, Socket player2_socket, std::ato
   while (!is_exit) {
 	spdlog::info("Waiting for new messages in game session...");
 	const int poll_count = poll(session_data.pfds, fd_count, -1);
-	spdlog::info("Events occurred on {} sockets", poll_count);
 
 	if (poll_count == -1) {
 	  spdlog::error("Error occurred when polling data.");
@@ -79,7 +76,6 @@ void game_session_routine(Socket player1_socket, Socket player2_socket, std::ato
 
 	for(int socket_number = 0; socket_number < fd_count; ++socket_number) {
 	  const auto& pfd = session_data.pfds[socket_number];
-	  spdlog::info("Socket {}: Events: {:#b}, Revents: {:#b}", socket_number, pfd.events, pfd.revents);
 	  if(pfd.revents & POLLHUP) {
 		spdlog::error("Client closed connection.");
 		if(socket_number == PLAYER1_SOCKET) {
@@ -93,7 +89,6 @@ void game_session_routine(Socket player1_socket, Socket player2_socket, std::ato
 		if(receive_message(pfd.fd, &incoming_message) == -1) {
 		  //handle error here
 		  spdlog::error("Error occurred when trying to receive message.");
-		  MessageStorage message{DISCONNECT, 0};
 		  if(socket_number == PLAYER1_SOCKET) {
 			  send_error(player2_socket, OPPONENT_DISCONNECTED);
 		  } else {
@@ -102,7 +97,7 @@ void game_session_routine(Socket player1_socket, Socket player2_socket, std::ato
 		  is_exit = true;
 		} else {
 		  spdlog::info("Received new session message: {}", message_to_string(incoming_message));
-		  session_data.handle_message(SocketNumber(socket_number), incoming_message);
+		  session_data.handle_message(SocketNumber(socket_number), incoming_message, is_exit);
 		}
 	  } else if(pfd.revents) {
 		spdlog::error("Unknown error occurred.");
@@ -122,9 +117,10 @@ SessionData::SessionData(Socket player1_socket, Socket player2_socket) {
   pfds[1].fd = player2_socket.getSocketFd();
   pfds[0].events = POLLIN;
   pfds[1].events = POLLIN;
+  engine.reset();
 }
 
-void SessionData::handle_message(SocketNumber socket_number, const struct MessageStorage& message) {
+void SessionData::handle_message(SocketNumber socket_number, const struct MessageStorage& message, std::atomic<bool>& is_exit) {
 	switch(message.message_type) {
 	  case MOVE: {
 		Move move;
@@ -133,16 +129,21 @@ void SessionData::handle_message(SocketNumber socket_number, const struct Messag
 		move.type = MoveType(message.payload[2]);
 		if(engine.is_valid(move)) {
 		  engine.make_move(move);
+		  send_message(player_sockets[!socket_number], message);
+		} else {
+		  send_error(player_sockets[0], ErrorType::INVALID_MOVE);
+		  send_error(player_sockets[1], ErrorType::INVALID_MOVE);
+		  is_exit = true;
 		}
-		send_message(player_sockets[!socket_number], message);
 		break;
+	  }
+	  case RESIGN: {
+		send_message(player_sockets[!socket_number], message);
+		is_exit = true;
 	  }
 //	  case LOBBY_CREATED:break;
 //	  case HANDSHAKE:break;
 //	  case DISCONNECT:break;
-//	  case RESIGN:break;
-//	  case ERROR:break;
-//	  case GAME_STARTED:break;
 	  default:break;
 	}
 }

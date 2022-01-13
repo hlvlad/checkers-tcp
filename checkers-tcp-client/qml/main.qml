@@ -21,10 +21,12 @@ Window {
         anchors.bottom: parent.bottom
         width: 300
 
-        onStartGame: stack.push(game_view);
-        onStopGame: stack.clear()
         onCreateLobby: NetworkSession.create_lobby()
         onConnectToLobby: stack.push(connecting_view, {"lobby_id": lobby_id})
+        onResign: {
+            NetworkSession.resign();
+            stack.pop(stack.initialItem)
+        }
     }
 
     StackView {
@@ -34,7 +36,6 @@ Window {
         anchors.bottom: parent.bottom
         anchors.left: game_menu.right
         initialItem: main_view
-//        initialItem: game_view
 
         pushEnter: Transition { PropertyAnimation { property: "opacity"; from: 0; to: 1; duration: 200 } }
         pushExit: Transition { PropertyAnimation { property: "opacity"; from: 1; to:0; duration: 200 } }
@@ -95,6 +96,12 @@ Window {
 
         function onGameStarted(is_white) {
             stack.push(game_view, {"isWhiteSide": is_white});
+            game_menu.isGameRunning = true;
+        }
+
+        function onResignReceived() {
+            showNotification("Opponent resigned.")
+            stack.pop(stack.initialItem)
         }
     }
 

@@ -32,6 +32,10 @@ Dialog {
             Label { text: "Server port:" }
             TextField {
                 id: server_port
+                validator: IntValidator {
+                    bottom: 1
+                    top: 65535
+                }
                 placeholderText: "Enter server port"
                 Layout.fillWidth: true
             }

@@ -1,4 +1,4 @@
-#include "../include/checkers_engine.h"
+#include "checkers_engine.h"
 
 
 checkers_engine::checkers_engine()
@@ -100,7 +100,7 @@ MoveList checkers_engine::valid_moves(SpotIndex from_index) const
 	   list.emplace_back(from_index, to, spot_index_to_bit[to] & OPPOSITE_BASE[turn] ? MoveType::CAPTURE_PROMOTION : MoveType::CAPTURE);
    }
 
-   if (captures())  return list;
+   if (captures()) return list;
 
    if(king_bit) {
 	 for (const SpotIndex to : SpotsBitIterator(king_moves(king_bit)))
@@ -162,11 +162,15 @@ Board checkers_engine::bitboard_to_board(Bitboard bitboard)
 
 bool checkers_engine::is_valid(const Move& move) const
 {
-    const auto from_bit = spot_index_to_bit[move.from] & pieces[turn];
-    if (!from_bit) return false;
-    return (kings & from_bit ?
-                (king_moves(from_bit) | king_capture_moves(from_bit)) :
-                (man_moves(from_bit) | man_capture_moves(from_bit))) & spot_index_to_bit[move.to];
+      for(const auto& valid_move: valid_moves(move.from)) {
+		if(valid_move.to == move.to && valid_move.type == move.type) return true;
+	  }
+	  return false;
+//    const auto from_bit = spot_index_to_bit[move.from] & pieces[turn];
+//    if (!from_bit) return false;
+//    return (kings & from_bit ?
+//                (king_moves(from_bit) | king_capture_moves(from_bit)) :
+//                (man_moves(from_bit) | man_capture_moves(from_bit))) & spot_index_to_bit[move.to];
 }
 
 Bitboard checkers_engine::captures() const {

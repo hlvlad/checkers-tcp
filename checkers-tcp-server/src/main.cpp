@@ -6,9 +6,9 @@
 #include <random>
 #include <thread>
 #include <unordered_map>
+#include <csignal>
 
-#include "../include/game_session.h"
-#include "../include/message.h"
+#include "game_session.h"
 #include "spdlog/spdlog.h"
 
 Socket server_socket;
@@ -20,10 +20,6 @@ uint32_t random_id() {
   return dist(rd);
 }
 
-void stop_listening() {
-  server_socket.close();
-}
-
 struct LobbyInfo {
 
   uint32_t lobby_id = 0;
@@ -32,7 +28,6 @@ struct LobbyInfo {
   std::atomic<bool> is_closed = false;
 
   LobbyInfo(uint32_t lobby_id, Socket _player1) : lobby_id(lobby_id), player1(_player1) {}
-//  LobbyInfo(Socket _player1, Socket _player2) : player1(_player1), player2(_player2) {}
 
   explicit LobbyInfo() = default;
   explicit LobbyInfo(Socket player_socket) : player1(player_socket) {}
@@ -85,15 +80,37 @@ struct LobbiesList {
 
   void remove_lobby(int lobby_id) {
 	std::scoped_lock<std::mutex> lock(list_mutex);
+	lobbies.at(lobby_id).is_closed = true;
 	lobbies.erase(lobby_id);
+  }
+
+  void close_all() {
+	std::scoped_lock<std::mutex> lock(list_mutex);
+	for (auto& [lobby_id, lobby]: lobbies) {
+	  lobby.is_closed = true;
+	}
   }
 };
 
-int main() {
-  spdlog::info("Starting Checkers TCP server on port 3000.");
-  LobbiesList lobbies_list;
+static bool is_done = false;
+static LobbiesList lobbies_list;
 
-  bool is_done = false;
+void cleanup() {
+  lobbies_list.close_all();
+  server_socket.close();
+  is_done = true;
+}
+
+void signalHandler( int signum ) {
+  spdlog::info("Shutting down server...");
+  cleanup();
+  exit(signum);
+}
+
+int main() {
+  signal(SIGINT, signalHandler);
+  signal(SIGTERM, signalHandler);
+  spdlog::info("Starting Checkers TCP server on port 3000.");
   server_socket.openServerSocket("3000");
   while (!is_done) {
 	spdlog::info("Waiting for new connections...");
@@ -105,15 +122,19 @@ int main() {
 	  uint32_t lobby_id = lobbies_list.add_lobby(player_socket);
 	  if (lobby_id != 0) {
 		send_lobby_created(player_socket, lobby_id);
+	  } else {
+		send_error(player_socket, ErrorType::SERVER_ERROR);
+		player_socket.close();
 	  }
 	} else if (handshake_result.handshake_type == HandshakeType::CONNECT_TO_SESSION) {
-	  spdlog::info("Player is connecting to existing lobby.");
+	  spdlog::info("Player is connecting to lobby.");
 	  if(lobbies_list.add_player_to_lobby(player_socket, handshake_result.lobby_id) == -1) {
+		spdlog::warn("Lobby with provided id doesn't exist.");
 		send_error(player_socket, ErrorType::LOBBY_NOT_EXISTS);
+		player_socket.close();
 	  }
 	}
   }
-  is_done = true;
-
+  cleanup();
   return 0;
 }

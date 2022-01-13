@@ -9,11 +9,11 @@ Item {
     id: menu_item
     property string serverAddress: "localhost"
     property string serverPort: "3000"
+    property bool isGameRunning: false
 
     signal createLobby
-    signal startGame
-    signal stopGame
     signal connectToLobby(int lobby_id)
+    signal resign
 
     SettingsDialog {
         id: settings_dialog
@@ -71,20 +71,15 @@ Item {
                 Layout.alignment: Qt.AlignHCenter
             }
         }
-        Row {
-            anchors.leftMargin: 20
-            anchors.left: parent.left
+        MenuButton {
+            id: resign_button
+            text: "Resign"
+            enabled: menu_item.isGameRunning
+            onClicked: resign()
+
+            anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 20
-            Label {
-                id: connection_status
-                color: "white"
-                text: "Connection status: "
-            }
-            Text {
-                color: "white"
-                text: "Disconnected"
-            }
         }
     }
 

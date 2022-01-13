@@ -1,22 +1,22 @@
-#include "networkgamesession.h"
+#include "message_handler.h"
 #include "pack.h"
 #include <QDebug>
 
-NetworkGameSession::NetworkGameSession(QObject* parent) : QObject(parent), server_socket(new QTcpSocket(this))
+MessageHandler::MessageHandler(QObject* parent) : QObject(parent), server_socket(new QTcpSocket(this))
 {
-    connect(server_socket, &QTcpSocket::errorOccurred, this, &NetworkGameSession::connectionError);
-    connect(server_socket, &QTcpSocket::readyRead, this, &NetworkGameSession::handle_message);
+    connect(server_socket, &QTcpSocket::errorOccurred, this, &MessageHandler::connectionError);
+    connect(server_socket, &QTcpSocket::readyRead, this, &MessageHandler::handle_message);
 }
 
-void NetworkGameSession::connect_to_server() {
+void MessageHandler::connect_to_server() {
   qInfo() << "Connecting to server:" << network_config.address << "/" << network_config.port;
   server_socket->connectToHost(network_config.address, network_config.port);
 }
-void NetworkGameSession::connectionError(QTcpSocket::SocketError socketError) {
+void MessageHandler::connectionError(QTcpSocket::SocketError socketError) {
   qCritical() << socketError;
 }
 
-void NetworkGameSession::receive_message(MessageStorage &message_storage) {
+void MessageHandler::receive_message(MessageStorage &message_storage) {
   char buf[2];
   // Receive message type and length
   int bytes_read = server_socket->read(buf, 2);
@@ -35,7 +35,7 @@ void NetworkGameSession::receive_message(MessageStorage &message_storage) {
 }
 
 
-void NetworkGameSession::handle_message() {
+void MessageHandler::handle_message() {
   MessageStorage message;
   receive_message(message);
   switch (message.message_type) {
@@ -66,14 +66,17 @@ void NetworkGameSession::handle_message() {
       emit errorOccurred(ErrorType::OPPONENT_DISCONNECTED);
       break;
   }
+  case RESIGN: {
+      emit resignReceived();
+      break;
+  }
   case HANDSHAKE:
-  case RESIGN:
   default:
       break;
   }
 }
 
-void NetworkGameSession::send_message(const MessageStorage &message_storage) {
+void MessageHandler::send_message(const MessageStorage &message_storage) {
   unsigned char buf[2+MAX_MESSAGE_LEN];
   buf[0] = message_storage.message_type;
   buf[1] = message_storage.len;
@@ -83,7 +86,7 @@ void NetworkGameSession::send_message(const MessageStorage &message_storage) {
   qInfo() << "Send message: " << message_storage;
 }
 
-void NetworkGameSession::send_handshake(const uint32_t lobby_id) {
+void MessageHandler::send_handshake(const uint32_t lobby_id) {
   MessageStorage message_storage{MessageType::HANDSHAKE, 5};
   // Pack handshake type
   message_storage.payload[0] = HandshakeType::CONNECT_TO_SESSION;
@@ -92,14 +95,14 @@ void NetworkGameSession::send_handshake(const uint32_t lobby_id) {
   send_message(message_storage);
 }
 
-void NetworkGameSession::send_handshake() {
+void MessageHandler::send_handshake() {
   MessageStorage message_storage{MessageType::HANDSHAKE, 1};
   // Pack handshake type
   message_storage.payload[0] = HandshakeType::CREATE_SESSION;
   send_message(message_storage);
 }
 
-void NetworkGameSession::send_move(const Move &move)
+void MessageHandler::send_move(const Move &move)
 {
     MessageStorage message_storage{MessageType::MOVE, 3};
     message_storage.payload[0] = move.from;
@@ -108,15 +111,21 @@ void NetworkGameSession::send_move(const Move &move)
     send_message(message_storage);
 }
 
-NetworkGameSession::NetworkSessionStatus NetworkGameSession::get_connection_status() {
+void MessageHandler::send_resign()
+{
+    MessageStorage message_storage{MessageType::RESIGN, 0};
+    send_message(message_storage);
+}
+
+MessageHandler::NetworkSessionStatus MessageHandler::get_connection_status() {
   if (server_socket->isOpen()) {
-	return NetworkGameSession::CONNECTED;
+	return MessageHandler::CONNECTED;
   } else {
-	return NetworkGameSession::DISCONNECTED;
+	return MessageHandler::DISCONNECTED;
   }
 }
 
-void NetworkGameSession::set_server_address(QString address, quint16 port)
+void MessageHandler::set_server_address(QString address, quint16 port)
 {
   network_config.address = address;
   network_config.port = port;

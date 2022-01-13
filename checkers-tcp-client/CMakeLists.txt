@@ -15,21 +15,21 @@ set(SOURCES
     src/checkers_engine.cpp
     src/main.cpp
     src/message.cpp
-    src/networkgamesession.cpp
-    src/networksession.cpp
+    src/message_handler.cpp
+    src/network_session.cpp
     src/pack.cpp
-    src/checkersmodel.cpp
+    src/checkers_model.cpp
     )
 
 set(HEADERS
     include/checkers_engine.h
     include/error.h
     include/message.h
-    include/new_misc.h
-    include/networkgamesession.h
-    include/networksession.h
+    include/board.h
+    include/message_handler.h
+    include/network_session.h
     include/pack.h
-    include/checkersmodel.h
+    include/checkers_model.h
     )
 
 set(QML_FILES

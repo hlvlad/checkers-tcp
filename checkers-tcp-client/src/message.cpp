@@ -4,7 +4,7 @@
 
 #include "message.h"
 #include "pack.h"
-#include "new_misc.h"
+#include "../../checkers-tcp-server/include/board.h"
 
 std::string message_to_string(const MessageStorage& message) {
   std::string result;
@@ -56,6 +56,16 @@ std::string message_to_string(const MessageStorage& message) {
 	  break;
 	case MessageType::RESIGN:
 	  result += "RESIGN (" + std::to_string(message.len) + " bytes) [";
+	  break;
+	case MessageType::ERROR:
+	  result += "ERROR (" + std::to_string(message.len) + " bytes) [";
+	  switch(ErrorType(message.payload[0])) {
+		case ErrorType::LOBBY_NOT_EXISTS: result += "LOBBY_NOT_EXISTS"; break;
+		case ErrorType::SERVER_ERROR: result += "SERVER_ERROR"; break;
+		case ErrorType::SERVER_DISCONNECTED: result += "SERVER_DISCONNECTED"; break;
+		case ErrorType::OPPONENT_DISCONNECTED: result += "OPPONENT_DISCONNECTED"; break;
+		case ErrorType::INVALID_MOVE: result += "INVALID_MOVE"; break;
+	  }
 	  break;
 	default:
 	  // should never reach here

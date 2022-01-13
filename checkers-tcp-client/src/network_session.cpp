@@ -1,12 +1,13 @@
-#include "networksession.h"
+#include "network_session.h"
 
 
-NetworkSession::NetworkSession(QObject *parent) : QObject(parent), network_session(new NetworkGameSession(this))
+NetworkSession::NetworkSession(QObject *parent) : QObject(parent), network_session(new MessageHandler(this))
 {
-    connect(network_session, &NetworkGameSession::lobbyCreated, this, &NetworkSession::lobbyCreated);
-    connect(network_session, &NetworkGameSession::gameStarted, this, &NetworkSession::onGameStarted);
-    connect(network_session, &NetworkGameSession::errorOccurred, this, &NetworkSession::onErrorOccurred);
-    connect(network_session, &NetworkGameSession::moveReceived, this, &NetworkSession::onMoveReceived);
+    connect(network_session, &MessageHandler::lobbyCreated, this, &NetworkSession::lobbyCreated);
+    connect(network_session, &MessageHandler::gameStarted, this, &NetworkSession::onGameStarted);
+    connect(network_session, &MessageHandler::errorOccurred, this, &NetworkSession::onErrorOccurred);
+    connect(network_session, &MessageHandler::moveReceived, this, &NetworkSession::onMoveReceived);
+    connect(network_session, &MessageHandler::resignReceived, this, &NetworkSession::resignReceived);
 }
 
 void NetworkSession::set_server_address(QString address, QString port)
@@ -16,9 +17,9 @@ void NetworkSession::set_server_address(QString address, QString port)
 
 void NetworkSession::create_lobby()
 {
-    if(network_session->get_connection_status() == NetworkGameSession::DISCONNECTED) {
+    if(network_session->get_connection_status() == MessageHandler::DISCONNECTED) {
         network_session->connect_to_server();
-        if(network_session->get_connection_status() == NetworkGameSession::DISCONNECTED) {
+        if(network_session->get_connection_status() == MessageHandler::DISCONNECTED) {
             return;
         }
     }
@@ -27,9 +28,9 @@ void NetworkSession::create_lobby()
 
 void NetworkSession::connect_lobby(quint32 lobby_id)
 {
-    if(network_session->get_connection_status() == NetworkGameSession::DISCONNECTED) {
+    if(network_session->get_connection_status() == MessageHandler::DISCONNECTED) {
         network_session->connect_to_server();
-        if(network_session->get_connection_status() == NetworkGameSession::DISCONNECTED) {
+        if(network_session->get_connection_status() == MessageHandler::DISCONNECTED) {
             return;
         }
     }
@@ -37,14 +38,19 @@ void NetworkSession::connect_lobby(quint32 lobby_id)
 }
 
 void NetworkSession::send_move(quint8 from, quint8 to, quint8 type) {
-    if(network_session->get_connection_status() == NetworkGameSession::DISCONNECTED) {
+    if(network_session->get_connection_status() == MessageHandler::DISCONNECTED) {
         network_session->connect_to_server();
-        if(network_session->get_connection_status() == NetworkGameSession::DISCONNECTED) {
+        if(network_session->get_connection_status() == MessageHandler::DISCONNECTED) {
             return;
         }
     }
     Move move{SpotIndex(from), SpotIndex(to), MoveType(type)};
     network_session->send_move(move);
+}
+
+void NetworkSession::resign()
+{
+  network_session->send_resign();
 }
 
 void NetworkSession::onErrorOccurred(ErrorType error_type)
