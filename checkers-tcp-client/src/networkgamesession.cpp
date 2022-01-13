@@ -116,3 +116,8 @@ NetworkGameSession::NetworkSessionStatus NetworkGameSession::get_connection_stat
   }
 }
 
+void NetworkGameSession::set_server_address(QString address, quint16 port)
+{
+  network_config.address = address;
+  network_config.port = port;
+}

@@ -1,4 +1,4 @@
-#include "checkers_engine.h"
+#include "../include/checkers_engine.h"
 
 
 checkers_engine::checkers_engine()

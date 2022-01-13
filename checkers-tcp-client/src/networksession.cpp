@@ -9,6 +9,11 @@ NetworkSession::NetworkSession(QObject *parent) : QObject(parent), network_sessi
     connect(network_session, &NetworkGameSession::moveReceived, this, &NetworkSession::onMoveReceived);
 }
 
+void NetworkSession::set_server_address(QString address, QString port)
+{
+    network_session->set_server_address(address, port.toUInt());
+}
+
 void NetworkSession::create_lobby()
 {
     if(network_session->get_connection_status() == NetworkGameSession::DISCONNECTED) {

@@ -10,8 +10,8 @@
 #include <poll.h>
 #include <spdlog/spdlog.h>
 
-#include "game_session.h"
-#include "message.h"
+#include "../include/game_session.h"
+#include "../include/message.h"
 
 
 int check_error_recv(int socket_fd, size_t nbytes) {

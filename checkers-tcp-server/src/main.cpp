@@ -7,8 +7,8 @@
 #include <thread>
 #include <unordered_map>
 
-#include "game_session.h"
-#include "message.h"
+#include "../include/game_session.h"
+#include "../include/message.h"
 #include "spdlog/spdlog.h"
 
 Socket server_socket;

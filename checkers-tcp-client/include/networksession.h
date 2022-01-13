@@ -11,6 +11,7 @@ class NetworkSession : public QObject
     Q_OBJECT
 public:
     explicit NetworkSession(QObject *parent = nullptr);
+    Q_INVOKABLE void set_server_address(QString address, QString port);
     Q_INVOKABLE void create_lobby();
     Q_INVOKABLE void connect_lobby(quint32 lobby_id);
     Q_INVOKABLE void send_move(quint8 from, quint8 to, quint8 type);

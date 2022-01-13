@@ -3,6 +3,8 @@ import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
+import network 1.0
+
 Item {
     id: menu_item
     property string serverAddress: "localhost"
@@ -24,6 +26,7 @@ Item {
         onAccepted: {
             menu_item.serverAddress = serverAddress;
             menu_item.serverPort = serverPort;
+            NetworkSession.set_server_address(menu_item.serverAddress, menu_item.serverPort)
         }
     }
 

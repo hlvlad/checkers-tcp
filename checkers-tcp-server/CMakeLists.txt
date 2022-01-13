@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(checkers_server_tcp)
+project(CheckersTcpServer)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -11,20 +11,20 @@ if(NOT TARGET spdlog)
 endif()
 
 set(HEADERS
-        game_session.h
-        socket.h
-        message.h
+        include/game_session.h
+        include/socket.h
+        include/message.h
         include/pack.h
-        new_misc.h
-        checkers_engine.h
+        include/new_misc.h
+        include/checkers_engine.h
         )
 
 set(SOURCES
-        main.cpp
-        game_session.cpp
-        socket.cpp
-        message.cpp
-        checkers_engine.cpp
+        src/main.cpp
+        src/game_session.cpp
+        src/socket.cpp
+        src/message.cpp
+        src/checkers_engine.cpp
         )
-add_executable(checkers_server_tcp ${HEADERS} ${SOURCES})
-target_link_libraries(checkers_server_tcp PRIVATE spdlog::spdlog)
+add_executable(CheckersTcpServer ${HEADERS} ${SOURCES})
+target_link_libraries(CheckersTcpServer PRIVATE spdlog::spdlog)

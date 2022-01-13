@@ -32,6 +32,7 @@ public:
   void receive_message(MessageStorage& message_storage);
   NetworkSessionStatus get_connection_status();
   void wait_for_message();
+  void set_server_address(QString address, quint16 port);
 
 signals:
   void lobbyCreated(quint32 lobby_id);

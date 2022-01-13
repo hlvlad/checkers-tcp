@@ -1,5 +1,5 @@
 #include "gameprovider.h"
-#include "listener.h"
+#include "../include/listener.h"
 
 #include <QCoreApplication>
 #include <QThread>
