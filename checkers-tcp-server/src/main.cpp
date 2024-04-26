@@ -122,6 +122,8 @@ struct LobbiesList {
 	 * @return 0 if the player was added successfully, -1 if the lobby does not exist.
 	 */
 	int add_player_to_lobby(Socket player_socket, uint32_t lobby_id) {
+		std::scoped_lock<std::mutex> lock(list_mutex);
+
 		auto lobby_it = lobbies.find(lobby_id);
 		if (lobby_it == lobbies.end()) {
 			return -1;
@@ -138,6 +140,7 @@ struct LobbiesList {
 	 */
 	void remove_lobby(int lobby_id) {
 		std::scoped_lock<std::mutex> lock(list_mutex);
+
 		lobbies.at(lobby_id).is_closed = true;
 		lobbies.erase(lobby_id);
 	}
@@ -147,6 +150,7 @@ struct LobbiesList {
 	 */
 	void close_all() {
 		std::scoped_lock<std::mutex> lock(list_mutex);
+
 		for (auto& [lobby_id, lobby]: lobbies) {
 			lobby.is_closed = true;
 		}
@@ -182,33 +186,42 @@ void signalHandler( int signum ) {
 int main() {
 	signal(SIGINT, signalHandler);
 	signal(SIGTERM, signalHandler);
+
 	spdlog::info("Starting Checkers TCP server on port 3000.");
 	server_socket.openServerSocket("3000");
+
 	while (!is_done) {
-		spdlog::info("Waiting for new connections...");
-		Socket player_socket = server_socket.accept();
+		try {
+			spdlog::info("Waiting for new connections...");
+			Socket player_socket = server_socket.accept();
 
-		spdlog::info("Received new connection from {}", player_socket.getAddressString());
-		HandshakeResult handshake_result = receive_handshake(player_socket);
+			spdlog::info("Received new connection from {}", player_socket.getAddressString());
+			HandshakeResult handshake_result = receive_handshake(player_socket);
 
-		if (handshake_result.handshake_type == HandshakeType::CREATE_SESSION) {
-			spdlog::info("Player is creating new lobby.");
-			const uint32_t lobby_id = lobbies_list.add_lobby(player_socket);
-			if (lobby_id != 0) {
-				send_lobby_created(player_socket, lobby_id);
-			} else {
-				send_error(player_socket, ErrorType::SERVER_ERROR);
-				player_socket.close();
+			if (handshake_result.handshake_type == HandshakeType::CREATE_SESSION) {
+				spdlog::info("Player is creating new lobby.");
+				const uint32_t lobby_id = lobbies_list.add_lobby(player_socket);
+				if (lobby_id != 0) {
+					send_lobby_created(player_socket, lobby_id);
+				} else {
+					spdlog::error("Failed to create new lobby.");
+					send_error(player_socket, ErrorType::SERVER_ERROR);
+					player_socket.close();
+				}
+			} else if (handshake_result.handshake_type == HandshakeType::CONNECT_TO_SESSION) {
+				spdlog::info("Player is connecting to lobby.");
+				if(lobbies_list.add_player_to_lobby(player_socket, handshake_result.lobby_id) == -1) {
+					spdlog::warn("Lobby with provided id doesn't exist.");
+					send_error(player_socket, ErrorType::LOBBY_NOT_EXISTS);
+					player_socket.close();
+				}
 			}
-		} else if (handshake_result.handshake_type == HandshakeType::CONNECT_TO_SESSION) {
-			spdlog::info("Player is connecting to lobby.");
-			if(lobbies_list.add_player_to_lobby(player_socket, handshake_result.lobby_id) == -1) {
-				spdlog::warn("Lobby with provided id doesn't exist.");
-				send_error(player_socket, ErrorType::LOBBY_NOT_EXISTS);
-				player_socket.close();
-			}
+		} catch (const std::exception& e) {
+			spdlog::error("Exception occurred: {}", e.what());
+			is_done = true;
 		}
 	}
+
 	cleanup();
 	return 0;
 }

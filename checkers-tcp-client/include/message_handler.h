@@ -43,6 +43,11 @@ public:
   void connect_to_server();
 
   /**
+   * @brief Clears the server socket and disconnects from the server.
+   */
+  void cleanup_connection();
+
+  /**
    * @brief Sends a message to the server.
    * @param message_storage The message to send.
    */

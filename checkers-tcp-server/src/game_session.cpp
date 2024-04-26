@@ -81,6 +81,7 @@ void cleanup_session(SessionData& session_data) {
  */
 void game_session_routine(Socket player1_socket, Socket player2_socket, std::atomic<bool>& is_exit, uint32_t lobby_id) {
 	spdlog::info("Started game session thread for lobby {}.", lobby_id);
+
 	SessionData session_data(player1_socket, player2_socket);
 	const nfds_t fd_count = 2;
 	send_game_started(player1_socket, GameFlags::IM_WHITE);
@@ -176,10 +177,11 @@ void SessionData::handle_message(SocketNumber socket_number, const struct Messag
 			case RESIGN: {
 				send_message(player_sockets[!socket_number], message);
 				is_exit = true;
+				break;
 			}
-//      case LOBBY_CREATED:break;
-//      case HANDSHAKE:break;
-//      case DISCONNECT:break;
-			default:break;
+			default: {
+				spdlog::error("Unknown message type received {}.", message.message_type);
+				break;
+			}
 		}
 }
