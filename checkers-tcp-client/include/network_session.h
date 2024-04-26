@@ -3,6 +3,8 @@
 #include "message_handler.h"
 
 #include <QObject>
+#include <QQmlEngine>
+#include <QJSEngine>
 
 /**
  * @brief The NetworkSession class represents a network session for a checkers game.
@@ -14,7 +16,30 @@
 class NetworkSession : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(NetworkSession)
+
+
 public:
+    
+    /**
+     * @brief Returns a QML instance of the network session.
+     *
+     * This function is used to create a QML instance of the network session. It takes a QQmlEngine
+     * and a QJSEngine as parameters and returns a QObject pointer. The QML instance can be used to
+     * interact with the network session in QML code.
+     *
+     * @param engine The QQmlEngine used to create the QML instance.
+     * @param scriptEngine The QJSEngine used to create the QML instance.
+     * @return A QObject pointer to the QML instance of the network session.
+     */
+    static QObject *qmlInstance(QQmlEngine *engine, QJSEngine *scriptEngine)
+    {
+        Q_UNUSED(engine);
+        Q_UNUSED(scriptEngine);
+
+        return new NetworkSession;
+    }
+
     /**
      * @brief Constructs a NetworkSession object.
      * 

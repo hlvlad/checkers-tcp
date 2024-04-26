@@ -5,6 +5,8 @@
 
 #include "network_session.h"
 
+#include <QObject>
+
 /**
  * @brief Constructs a NetworkSession object.
  * @param parent The parent QObject.

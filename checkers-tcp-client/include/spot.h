@@ -1,7 +1,5 @@
 #pragma once
 
-#include "misc.h"
-
 #include <QQuickItem>
 
 /**

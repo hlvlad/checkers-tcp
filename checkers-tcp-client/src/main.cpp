@@ -23,10 +23,8 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    auto network_session = std::make_unique<NetworkSession>();
-
     qmlRegisterType<CheckersModel>("checkersmodel", 1, 0, "CheckersModel");
-    qmlRegisterSingletonInstance("network", 1, 0, "NetworkSession", network_session.get());
+    qmlRegisterSingletonType<NetworkSession>("network", 1, 0, "NetworkSession", &NetworkSession::qmlInstance);
 
     QQmlApplicationEngine engine;
 
@@ -37,10 +35,6 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
     engine.load(url);
-
-    QObject *root = engine.rootObjects().at(0);
-
-    network_session->setParent(root);
 
     return app.exec();
 }

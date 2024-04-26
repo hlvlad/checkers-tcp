@@ -19,7 +19,6 @@ set(SOURCES
     )
 
 set(HEADERS
-    include/error.h
     include/message_handler.h
     include/network_session.h
     include/checkers_model.h
