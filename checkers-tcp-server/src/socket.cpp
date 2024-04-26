@@ -262,4 +262,3 @@ void Socket::close() {
 
   socketFD = -1;
 }
-

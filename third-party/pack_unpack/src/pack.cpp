@@ -1,7 +1,3 @@
-//
-// Created by vladvance on 03/01/2022.
-//
-
 #include "pack.h"
 
 unsigned long long int pack754(long double f, unsigned int bits, unsigned int expbits) {

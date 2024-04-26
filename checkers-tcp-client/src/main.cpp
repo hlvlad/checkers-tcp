@@ -1,8 +1,20 @@
+/**
+ * @file main.cpp
+ * @brief Contains the main function for the Checkers TCP client application.
+ */
+#include "checkers_model.h"
+#include "network_session.h"
+
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <checkers_model.h>
-#include <network_session.h>
 
+/**
+ * @brief The main entry point for the Checkers TCP client application.
+ *
+ * @param argc The number of command-line arguments.
+ * @param argv An array of command-line arguments.
+ * @return The exit code of the application.
+ */
 int main(int argc, char *argv[])
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

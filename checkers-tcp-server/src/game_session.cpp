@@ -1,16 +1,16 @@
-//
-// Created by vladvance on 25/12/2021.
-//
+
+#include "game_session.h"
+
+#include "message_handler.h"
+
+#include <spdlog/spdlog.h>
 
 #include <atomic>
 #include <cstdio>
 #include <cstring>
 #include <sys/socket.h>
-
 #include <poll.h>
-#include <spdlog/spdlog.h>
 
-#include "game_session.h"
 
 int check_error_recv(size_t nbytes) {
     if (nbytes <= 0) {

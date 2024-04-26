@@ -1,6 +1,11 @@
 #define FMT_HEADER_ONLY
 #define FMTLOG_HEADER_ONLY
 
+#include "game_session.h"
+#include "message_handler.h"
+
+#include "spdlog/spdlog.h"
+
 #include <atomic>
 #include <iostream>
 #include <random>
@@ -8,8 +13,6 @@
 #include <unordered_map>
 #include <csignal>
 
-#include "game_session.h"
-#include "spdlog/spdlog.h"
 
 Socket server_socket;
 

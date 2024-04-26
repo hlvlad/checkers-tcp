@@ -1,11 +1,21 @@
+/**
+ * @file checkers_engine.cpp
+ * @brief Implementation of the Checkers Engine class.
+ */
+
 #include "checkers_engine.h"
 
-
+/**
+ * @brief Default constructor for the Checkers Engine class.
+ */
 checkers_engine::checkers_engine()
 {
 
 }
 
+/**
+ * @brief Reset the game state to the initial state.
+ */
 void checkers_engine::reset()
 {
     pieces[WHITE] = WHITE_PIECES_SQUARES;
@@ -14,11 +24,14 @@ void checkers_engine::reset()
     turn = WHITE;
 }
 
+/**
+ * @brief Make a move on the game board.
+ * @param move The move to be made.
+ */
 void checkers_engine::make_move(const Move &move)
 {
     const auto from_bitboard = spot_index_to_bit[move.from];
     const auto to_bitboard = spot_index_to_bit[move.to];
-
 
     // Add "to" bit
     pieces[turn] |= to_bitboard;
@@ -28,7 +41,6 @@ void checkers_engine::make_move(const Move &move)
     // Remove "from" bit
     pieces[turn] &= ~from_bitboard;
     kings &= ~from_bitboard;
-
 
     if (move.type & CAPTURE) {
         switch (int(spot_index_to_bit_index[move.to]) - int(spot_index_to_bit_index[move.from])) {
@@ -56,14 +68,15 @@ void checkers_engine::make_move(const Move &move)
     turn = ~turn;
 }
 
-
+/**
+ * @brief Get the list of valid moves for the current game state.
+ * @return The list of valid moves.
+ */
 MoveList checkers_engine::valid_moves() const
 {
-
     MoveList list;
 
     if (captures()) {
-
         for (const auto from : SpotsBitIterator(pieces[turn] & kings))
             for (const auto to : SpotsBitIterator(king_capture_moves(spot_index_to_bit[from])))
                 list.emplace_back(from, to, MoveType::CAPTURE);
@@ -86,6 +99,11 @@ MoveList checkers_engine::valid_moves() const
     return list;
 }
 
+/**
+ * @brief Get the list of valid moves for a specific piece.
+ * @param from_index The index of the piece.
+ * @return The list of valid moves for the piece.
+ */
 MoveList checkers_engine::valid_moves(SpotIndex from_index) const
 {
    MoveList list;
@@ -113,6 +131,10 @@ MoveList checkers_engine::valid_moves(SpotIndex from_index) const
    return list;
 }
 
+/**
+ * @brief Get the current game board state.
+ * @return The game board state.
+ */
 Board checkers_engine::board() const
 {
     Board board;
@@ -133,9 +155,13 @@ Board checkers_engine::board() const
         board.push_back( {{ KING, BLACK }, index} );
 
     return board;
-
 }
 
+/**
+ * @brief Get the index of the captured piece in a move.
+ * @param move The move.
+ * @return The index of the captured piece, or SPOTS_NUMBER if no piece is captured.
+ */
 SpotIndex checkers_engine::get_captured_index(const Move &move) const
 {
     if (move.type & CAPTURE) {
@@ -149,6 +175,11 @@ SpotIndex checkers_engine::get_captured_index(const Move &move) const
     return SPOTS_NUMBER;
 }
 
+/**
+ * @brief Convert a bitboard representation to a board representation.
+ * @param bitboard The bitboard representation.
+ * @return The board representation.
+ */
 Board checkers_engine::bitboard_to_board(Bitboard bitboard)
 {
     Board board;
@@ -160,19 +191,24 @@ Board checkers_engine::bitboard_to_board(Bitboard bitboard)
     return board;
 }
 
+/**
+ * @brief Check if a move is valid.
+ * @param move The move to be checked.
+ * @return True if the move is valid, false otherwise.
+ */
 bool checkers_engine::is_valid(const Move& move) const
 {
-      for(const auto& valid_move: valid_moves(move.from)) {
-		if(valid_move.to == move.to && valid_move.type == move.type) return true;
-	  }
-	  return false;
-//    const auto from_bit = spot_index_to_bit[move.from] & pieces[turn];
-//    if (!from_bit) return false;
-//    return (kings & from_bit ?
-//                (king_moves(from_bit) | king_capture_moves(from_bit)) :
-//                (man_moves(from_bit) | man_capture_moves(from_bit))) & spot_index_to_bit[move.to];
+    const auto from_bit = spot_index_to_bit[move.from] & pieces[turn];
+    if (!from_bit) return false;
+    return (kings & from_bit ?
+                (king_moves(from_bit) | king_capture_moves(from_bit)) :
+                (man_moves(from_bit) | man_capture_moves(from_bit))) & spot_index_to_bit[move.to];
 }
 
+/**
+ * @brief Get the bitboard representation of all possible captures.
+ * @return The bitboard representation of all possible captures.
+ */
 Bitboard checkers_engine::captures() const {
     const auto turn_kings = pieces[turn] & kings;
     auto captures = king_capture_moves(turn_kings);
@@ -183,7 +219,11 @@ Bitboard checkers_engine::captures() const {
     return captures;
 }
 
-// FIXME: implement this
+/**
+ * @brief Get the possible moves for a man piece.
+ * @param man_bit The bitboard representation of the man piece.
+ * @return The bitboard representation of the possible moves.
+ */
 Bitboard checkers_engine::man_moves(Bitboard man_bit) const {
     const auto empty = ~all();
     Bitboard moves = BITBOARD_EMPTY;
@@ -198,7 +238,11 @@ Bitboard checkers_engine::man_moves(Bitboard man_bit) const {
     return moves;
 }
 
-// FIXME: implement this
+/**
+ * @brief Get the possible moves for a king piece.
+ * @param king_bit The bitboard representation of the king piece.
+ * @return The bitboard representation of the possible moves.
+ */
 Bitboard checkers_engine::king_moves(Bitboard king_bit) const {
     const auto empty = ~all();
     return (shift(king_bit & NE_MOVES_MASK, NORTH_EAST) & empty) |
@@ -207,9 +251,12 @@ Bitboard checkers_engine::king_moves(Bitboard king_bit) const {
            (shift(king_bit & SW_MOVES_MASK, SOUTH_WEST) & empty);
 }
 
+/**
+ * @brief Get the possible capture moves for a man piece.
+ * @param piece_bit The bitboard representation of the man piece.
+ * @return The bitboard representation of the possible capture moves.
+ */
 Bitboard checkers_engine::man_capture_moves(Bitboard piece_bit) const {
-//    const auto turn_piece_bit = piece_bit & pieces[turn];
-//    if(!turn_piece_bit) return BITBOARD_EMPTY;
     const auto empty = ~all();
 
     if (turn == WHITE) {
@@ -221,9 +268,12 @@ Bitboard checkers_engine::man_capture_moves(Bitboard piece_bit) const {
     }
 }
 
+/**
+ * @brief Get the possible capture moves for a king piece.
+ * @param piece_bit The bitboard representation of the king piece.
+ * @return The bitboard representation of the possible capture moves.
+ */
 Bitboard checkers_engine::king_capture_moves(Bitboard piece_bit) const {
-//    const auto turn_king_bit = piece_bit & pieces[turn] & kings;
-//    if(!turn_king_bit) return BITBOARD_EMPTY;
     const auto empty = ~all();
     const auto opponent = pieces[~turn];
 
@@ -231,5 +281,4 @@ Bitboard checkers_engine::king_capture_moves(Bitboard piece_bit) const {
            (shift(shift(piece_bit & NW_ATTACKS_MASK, NORTH_WEST) & opponent, NORTH_WEST) & empty) |
            (shift(shift(piece_bit & SE_ATTACKS_MASK, SOUTH_EAST) & opponent, SOUTH_EAST) & empty) |
            (shift(shift(piece_bit & SW_ATTACKS_MASK, SOUTH_WEST) & opponent, SOUTH_WEST) & empty);
-
 }

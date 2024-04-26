@@ -1,11 +1,12 @@
-//
-// Created by vladvance on 31/12/2021.
-//
+#include "message_handler.h"
 
-#include "../include/message.h"
+#include "message.h"
 #include "pack.h"
-#include "spdlog/spdlog.h"
+#include "board.h"
 
+#include <spdlog/spdlog.h>
+
+#include <cstring>
 
 std::string message_to_string(const MessageStorage& message) {
   std::string result;

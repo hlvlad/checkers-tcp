@@ -1,18 +1,13 @@
-//
-// Created by vladvance on 25/12/2021.
-//
+#pragma once
 
-#ifndef CHECKERS_SERVER_TCP_GAME_SESSION_H
-#define CHECKERS_SERVER_TCP_GAME_SESSION_H
+#include "checkers_engine.h"
+#include "socket.h"
+#include "message.h"
 
 #include <mutex>
 #include <poll.h>
 #include <atomic>
 
-//#include "engine.h"
-#include "checkers_engine.h"
-#include "socket.h"
-#include "message.h"
 
 enum SocketNumber {
   PLAYER1_SOCKET,
@@ -30,5 +25,3 @@ struct SessionData {
 };
 
 void game_session_routine(Socket player1_socket, Socket player2_socket, std::atomic<bool> &is_exit, uint32_t lobby_id);
-
-#endif //CHECKERS_SERVER_TCP_GAME_SESSION_H
